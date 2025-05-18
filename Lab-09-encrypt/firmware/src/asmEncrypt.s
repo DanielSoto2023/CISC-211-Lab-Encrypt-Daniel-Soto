@@ -10,7 +10,7 @@
 .type nameStr,%gnu_unique_object
     
 /*** STUDENTS: Change the next line to your name!  **/
-nameStr: .asciz "Inigo Montoya"  
+nameStr: .asciz "Daniel Soto"  
 .align
  
 /* initialize a global variable that C can access to print the nameStr */
@@ -89,10 +89,60 @@ asmEncrypt:
     push {r4-r11,LR}
     
     /* YOUR asmEncrypt CODE BELOW THIS LINE! VVVVVVVVVVVVVVVVVVVVV  */
-
-
-
+    /*r0 pointer, r1 shift num*/
+    MOV r11,r0
+    LDR r6, =cipherText
+    loop:
+    LDR R12, =0
+    LDRB r3,[r0],1 /*Grab the first character and then increment*/
+    CMP R12,r3
+    BEQ done
     
+    LDR R12, =65
+    CMP r3,r12
+    BLO storeChar /*If its lower than A then we dont touch it*/
+    
+    LDR R12,=122
+    CMP R3,r12
+    BHI storeChar /*If its higher than a then we dont touch it*/
+    
+    LDR r12, =90 /*check for lowercase*/
+    CMP R3,r12
+    BLS upperCase
+
+    LDR r12, =97 /*Check if its lowercase*/
+    CMP R3,r12
+    BHS lowerCase
+    B storeChar /*If it is the special characters between uppercase and lowercase dont touch*/
+    
+    upperCase: /*Adds shift then if it overflows past Z it loops back*/
+    ADD r3,r3,r1
+    LDR r12, =90
+    CMP r3,r12
+    BHI overFlow /*Branches if it goes past Z*/
+    B storeChar
+    
+    lowerCase:
+    ADD r3,r3,r1
+    LDR r12, =122
+    CMP r3,r12
+    BHI overFlow /*Branches if it goes past z*/
+    B storeChar
+    
+    overFlow:
+    SUB r3,r3,26
+    B storeChar
+    
+    storeChar: /*stores the char*/
+    STRB r3, [r6],1
+    B loop
+    
+    
+    
+    done:
+    LDR r12, =0
+    STRB r12,[r6]
+    LDR r0, =cipherText
     /* YOUR asmEncrypt CODE ABOVE THIS LINE! ^^^^^^^^^^^^^^^^^^^^^  */
 
     /* restore the caller's registers, as required by the ARM calling convention */
